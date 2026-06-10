@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claude Token Panel</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: #0f1117;
+        color: #e2e8f0;
+        min-height: 100vh;
+        padding: 24px 16px;
+      }
+
+      h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #94a3b8;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+
+      .summary-card {
+        background: #1e2330;
+        border: 1px solid #2d3748;
+        border-radius: 10px;
+        padding: 20px 24px;
+        margin-bottom: 12px;
+      }
+
+      .summary-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+      }
+
+      .summary-totals {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+        align-items: baseline;
+      }
+
+      .token-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .token-label {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-transform: uppercase;
+      }
+
+      .token-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .token-value.input {
+        color: #60a5fa;
+      }
+      .token-value.output {
+        color: #34d399;
+      }
+      .token-value.total {
+        color: #f8fafc;
+      }
+
+      .week-progress-wrap {
+        margin-top: 14px;
+      }
+
+      .week-progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 6px;
+      }
+
+      .week-progress-label {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .week-progress-pct {
+        font-size: 0.85rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .week-progress-pct.safe {
+        color: #34d399;
+      }
+      .week-progress-pct.warn {
+        color: #f59e0b;
+      }
+      .week-progress-pct.danger {
+        color: #ef4444;
+      }
+
+      .week-bar-track {
+        height: 8px;
+        background: #2d3748;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .week-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.4s ease;
+      }
+
+      .week-bar-fill.safe {
+        background: #34d399;
+      }
+      .week-bar-fill.warn {
+        background: #f59e0b;
+      }
+      .week-bar-fill.danger {
+        background: #ef4444;
+      }
+
+      .week-warn-banner {
+        display: none;
+        margin-top: 10px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #451a03;
+        color: #fbbf24;
+        border: 1px solid #92400e;
+      }
+
+      .countdown-card {
+        background: #1e2330;
+        border: 1px solid #2d3748;
+        border-radius: 10px;
+        padding: 14px 24px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .countdown-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .countdown-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #a78bfa;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .refresh-hint {
+        font-size: 0.7rem;
+        color: #334155;
+        margin-left: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+
+      thead th {
+        text-align: left;
+        padding: 10px 14px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #475569;
+        border-bottom: 1px solid #1e2330;
+      }
+
+      thead th.right {
+        text-align: right;
+      }
+
+      tbody tr {
+        border-bottom: 1px solid #1a1f2e;
+        transition: background 0.1s;
+      }
+
+      tbody tr:hover {
+        background: #1e2330;
+      }
+
+      tbody td {
+        padding: 10px 14px;
+        vertical-align: middle;
+      }
+
+      tbody td.right {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        color: #94a3b8;
+      }
+
+      .total-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .color-bar {
+        width: 4px;
+        height: 20px;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+
+      .color-bar.green {
+        background: #22c55e;
+      }
+      .color-bar.yellow {
+        background: #eab308;
+      }
+      .color-bar.red {
+        background: #ef4444;
+      }
+
+      .total-num {
+        font-variant-numeric: tabular-nums;
+        color: #94a3b8;
+      }
+
+      .project-name {
+        color: #e2e8f0;
+        font-weight: 500;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .time-cell {
+        color: #64748b;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .error-msg {
+        color: #f87171;
+        padding: 16px;
+        background: #1e2330;
+        border-radius: 8px;
+      }
+
+      .loading {
+        color: #475569;
+        padding: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Claude Token Panel</h1>
+
+    <div class="summary-card">
+      <div class="summary-label">本週累計（週一 11:00 台灣時間起）</div>
+      <div class="summary-totals">
+        <div class="token-group">
+          <span class="token-label">Input</span>
+          <span class="token-value input" id="week-input">—</span>
+        </div>
+        <div class="token-group">
+          <span class="token-label">Output</span>
+          <span class="token-value output" id="week-output">—</span>
+        </div>
+        <div class="token-group">
+          <span class="token-label">Total</span>
+          <span class="token-value total" id="week-total">—</span>
+        </div>
+      </div>
+      <div class="week-progress-wrap">
+        <div class="week-progress-header">
+          <span class="week-progress-label">週用量上限</span>
+          <span class="week-progress-pct safe" id="week-pct">—</span>
+        </div>
+        <div class="week-bar-track">
+          <div class="week-bar-fill safe" id="week-bar" style="width: 0%"></div>
+        </div>
+        <div class="week-warn-banner" id="week-warn">
+          ⚠ 本週用量已達 90%，接近上限
+        </div>
+      </div>
+    </div>
+
+    <div class="countdown-card">
+      <span class="countdown-label">下次重置</span>
+      <span class="countdown-value" id="countdown">計算中…</span>
+      <span class="refresh-hint" id="last-refresh"></span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>時間（台灣）</th>
+          <th>Project</th>
+          <th class="right">Input</th>
+          <th class="right">Output</th>
+          <th class="right">Total</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr>
+          <td colspan="5" class="loading">載入中…</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script>
+      const TAIPEI_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+      function toTaipei(isoStr) {
+        if (!isoStr) return "—";
+        const d = new Date(isoStr);
+        const local = new Date(d.getTime() + TAIPEI_OFFSET_MS);
+        const mm = String(local.getUTCMonth() + 1).padStart(2, "0");
+        const dd = String(local.getUTCDate()).padStart(2, "0");
+        const hh = String(local.getUTCHours()).padStart(2, "0");
+        const min = String(local.getUTCMinutes()).padStart(2, "0");
+        return `${mm}/${dd} ${hh}:${min}`;
+      }
+
+      function fmt(n) {
+        return n == null ? "—" : n.toLocaleString();
+      }
+
+      function nextResetMs() {
+        const now = new Date();
+        // Find next Monday 11:00 Taipei
+        const taipeiNowMs = now.getTime() + TAIPEI_OFFSET_MS;
+        const taipeiNow = new Date(taipeiNowMs);
+        // day 0=Sun,1=Mon,...,6=Sat in UTC (representing Taipei)
+        const day = taipeiNow.getUTCDay(); // 0=Sun
+        const daysUntilMonday = day === 1 ? 7 : (8 - day) % 7;
+        const nextMonday = new Date(taipeiNowMs);
+        nextMonday.setUTCDate(nextMonday.getUTCDate() + daysUntilMonday);
+        nextMonday.setUTCHours(11, 0, 0, 0);
+        // nextMonday is in Taipei time expressed as UTC struct — convert back
+        const nextResetUtcMs = nextMonday.getTime() - TAIPEI_OFFSET_MS;
+        return nextResetUtcMs - now.getTime();
+      }
+
+      function formatCountdown(ms) {
+        if (ms <= 0) return "即將重置";
+        const totalSec = Math.floor(ms / 1000);
+        const d = Math.floor(totalSec / 86400);
+        const h = Math.floor((totalSec % 86400) / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        const parts = [];
+        if (d > 0) parts.push(`${d}d`);
+        parts.push(`${String(h).padStart(2, "0")}h`);
+        parts.push(`${String(m).padStart(2, "0")}m`);
+        parts.push(`${String(s).padStart(2, "0")}s`);
+        return parts.join(" ");
+      }
+
+      function updateCountdown() {
+        document.getElementById("countdown").textContent =
+          formatCountdown(nextResetMs());
+      }
+
+      function renderTable(sessions) {
+        const tbody = document.getElementById("table-body");
+        if (!sessions || sessions.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="5" class="loading">無資料</td></tr>';
+          return;
+        }
+        tbody.innerHTML = sessions
+          .map(
+            (s) => `
+        <tr>
+          <td class="time-cell">${toTaipei(s.timestamp)}</td>
+          <td><span class="project-name" title="${s.project}">${s.project}</span></td>
+          <td class="right">${fmt(s.input_tokens)}</td>
+          <td class="right">${fmt(s.output_tokens)}</td>
+          <td>
+            <div class="total-cell">
+              <span class="total-num">${fmt(s.total_tokens)}</span>
+              <div class="color-bar ${s.color}"></div>
+            </div>
+          </td>
+        </tr>
+      `,
+          )
+          .join("");
+      }
+
+      async function fetchData() {
+        try {
+          const res = await fetch("/api/sessions");
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          document.getElementById("week-input").textContent = fmt(
+            data.week_total.input,
+          );
+          document.getElementById("week-output").textContent = fmt(
+            data.week_total.output,
+          );
+          document.getElementById("week-total").textContent = fmt(
+            data.week_total.total,
+          );
+
+          renderTable(data.sessions);
+
+          const pct = data.week_pct ?? 0;
+          const clampedPct = Math.min(pct, 100);
+          const level = pct >= 100 ? "danger" : pct >= 90 ? "warn" : "safe";
+          const pctEl = document.getElementById("week-pct");
+          const barEl = document.getElementById("week-bar");
+          const warnEl = document.getElementById("week-warn");
+          pctEl.textContent = `${pct}%`;
+          pctEl.className = `week-progress-pct ${level}`;
+          barEl.style.width = `${clampedPct}%`;
+          barEl.className = `week-bar-fill ${level}`;
+          warnEl.style.display = pct >= 90 ? "block" : "none";
+          if (pct >= 100) warnEl.textContent = "🔴 本週用量已超過上限（100%）";
+          else if (pct >= 90)
+            warnEl.textContent = "⚠ 本週用量已達 90%，接近上限";
+
+          const now = new Date();
+          document.getElementById("last-refresh").textContent =
+            `上次更新 ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+        } catch (e) {
+          document.getElementById("table-body").innerHTML =
+            `<tr><td colspan="5" class="error-msg">載入失敗：${e.message}</td></tr>`;
+        }
+      }
+
+      // Initial load
+      fetchData();
+      updateCountdown();
+
+      // Auto-refresh every 10 seconds
+      setInterval(fetchData, 10_000);
+      setInterval(updateCountdown, 1_000);
+    </script>
+  </body>
+</html>

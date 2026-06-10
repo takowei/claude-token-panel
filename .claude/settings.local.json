@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import sys,json; [print\\(json.dumps\\(json.loads\\(l\\), indent=2, ensure_ascii=False\\)[:800]\\) for l in sys.stdin]\")",
+      "Bash(python3 -c \"import sys,json; [print\\(json.dumps\\(json.loads\\(l\\), indent=2, ensure_ascii=False\\)[:600]\\) for l in sys.stdin if l.strip\\(\\)]\")",
+      "Read(//home/tako/.claude/logs/**)",
+      "Bash(python3 -c \"import sys,json; [print\\(json.dumps\\(json.loads\\(l\\), indent=2, ensure_ascii=False\\)[:1000]\\) for l in sys.stdin if l.strip\\(\\)]\")",
+      "Bash(python3 *)",
+      "Bash(PYTHONPATH=__TRACKED_VAR__/pylib python3 main.py)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('week_total:', d['week_total']\\); print\\('sessions count:', len\\(d['sessions']\\)\\); print\\('first session:', json.dumps\\(d['sessions'][0], indent=2\\)\\)\")",
+      "Bash([ ! -d \"$PYLIB\" ])",
+      "Bash(python3 /usr/share/python-wheels/pip-22.0.2-py3-none-any.whl/pip install fastapi uvicorn --target __TRACKED_VAR__/pylib-token-panel -q)",
+      "Bash(PYTHONPATH=__TRACKED_VAR__/pylib-token-panel python3 main.py)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('week_total:', d['week_total']\\); print\\('sessions:', len\\(d['sessions']\\)\\); [print\\(s['timestamp'][:16], s['project'], s['total_tokens'], s['color']\\) for s in d['sessions'][:5]]\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('week_total:', d['week_total']\\); print\\('sessions:', len\\(d['sessions']\\)\\); [print\\(s['timestamp'][:16], s['project'][:20], s['total_tokens'], s['color']\\) for s in d['sessions'][:5]]\")"
+    ]
+  }
+}
