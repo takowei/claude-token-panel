@@ -15,5 +15,8 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('week_total:', d['week_total']\\); print\\('sessions:', len\\(d['sessions']\\)\\); [print\\(s['timestamp'][:16], s['project'], s['total_tokens'], s['color']\\) for s in d['sessions'][:5]]\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('week_total:', d['week_total']\\); print\\('sessions:', len\\(d['sessions']\\)\\); [print\\(s['timestamp'][:16], s['project'][:20], s['total_tokens'], s['color']\\) for s in d['sessions'][:5]]\")"
     ]
-  }
+  },
+  "disabledMcpjsonServers": [
+    "github"
+  ]
 }
